@@ -47,7 +47,10 @@ function Home() {
         </div>
 
         {/* Organisation Chart */}
-        <div className="menu-button bg-org shadow-lg border border-gray-100 rounded-md">
+        <div 
+          className="menu-button bg-org shadow-lg border border-gray-100 rounded-md cursor-pointer"
+          onClick={() => navigate('/organization')}
+        >
           <div className="menu-content p-4">
             <h3 className="menu-title">Organisation Chart</h3>
             <p className="menu-subtitle">Know about BIDA officers</p>
@@ -55,13 +58,15 @@ function Home() {
         </div>
 
         {/* Bye Laws & Acts */}
-        <div className="menu-button bg-laws shadow-lg border border-gray-100 rounded-md">
+        <div 
+          className="menu-button bg-laws shadow-lg border border-gray-100 rounded-md cursor-pointer"
+          onClick={() => navigate('/byelaws')}
+        >
           <div className="menu-content p-4">
             <h3 className="menu-title">Bye Laws & Acts</h3>
             <p className="menu-subtitle">Bye laws & acts under BIDA</p>
           </div>
         </div>
-
         {/* Property & EMIs */}
         <div className="menu-button bg-property shadow-lg border border-gray-100 rounded-md">
           <div className="menu-content p-4">

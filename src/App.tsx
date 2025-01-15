@@ -106,8 +106,10 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import AboutBida from './pages/AboutBida';
+import Home from './Pages/Home';
+import AboutBida from './Pages/AboutBida';
+import OrganizationChart from './Pages/OrganizationChart';
+import ByeLawsAndActs from './Pages/ByeLawsAndActs';
 
 function App() {
   return (
@@ -115,9 +117,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutBida />} />
+        <Route path="/organization" element={<OrganizationChart />} />
+        <Route path="/byelaws" element={<ByeLawsAndActs />} />
       </Routes>
     </Router>
   );
 }
-
 export default App;
