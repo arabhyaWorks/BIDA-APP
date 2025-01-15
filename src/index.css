@@ -81,3 +81,31 @@ body {
 .bg-others::before {
   background-image: url('https://firebasestorage.googleapis.com/v0/b/kathavachak-95a17.appspot.com/o/Property%20%20Management%20system%2F6.png?alt=media&token=4c8e598d-1df0-4e5d-996d-219ac37883f3');
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}

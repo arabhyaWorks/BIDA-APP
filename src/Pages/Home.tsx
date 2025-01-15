@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ComingSoonModal from '../components/ComingSoonModal';
 
 function Home() {
   const navigate = useNavigate();
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
+  const handleComplaintClick = () => {
+    window.open('https://complaint.bidabhadohi.com/home/regComplaintByQrScan', '_blank');
+  };
 
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
@@ -67,6 +73,7 @@ function Home() {
             <p className="menu-subtitle">Bye laws & acts under BIDA</p>
           </div>
         </div>
+
         {/* Property & EMIs */}
         <div className="menu-button bg-property shadow-lg border border-gray-100 rounded-md">
           <div className="menu-content p-4">
@@ -78,7 +85,10 @@ function Home() {
         </div>
 
         {/* Complaints Filing */}
-        <div className="menu-button bg-complaints shadow-lg border border-gray-100 rounded-md">
+        <div 
+          className="menu-button bg-complaints shadow-lg border border-gray-100 rounded-md cursor-pointer"
+          onClick={handleComplaintClick}
+        >
           <div className="menu-content p-4">
             <h3 className="menu-title">Complaints Filing</h3>
             <p className="menu-subtitle">File Complaints to BIDA authority</p>
@@ -86,7 +96,10 @@ function Home() {
         </div>
 
         {/* Others */}
-        <div className="menu-button bg-others shadow-lg border border-gray-100 rounded-md">
+        <div 
+          className="menu-button bg-others shadow-lg border border-gray-100 rounded-md cursor-pointer"
+          onClick={() => setShowComingSoon(true)}
+        >
           <div className="menu-content p-4">
             <h3 className="menu-title">Others</h3>
             <p className="menu-subtitle">
@@ -95,6 +108,12 @@ function Home() {
           </div>
         </div>
       </div>
+
+      {/* Coming Soon Modal */}
+      <ComingSoonModal 
+        isOpen={showComingSoon}
+        onClose={() => setShowComingSoon(false)}
+      />
     </div>
   );
 }
