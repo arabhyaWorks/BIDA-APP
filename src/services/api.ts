@@ -1,7 +1,8 @@
 // services/api.ts
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+// const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://admin.pmsbhadohi.com/api';
 
 interface LoginResponse {
   message: string;
