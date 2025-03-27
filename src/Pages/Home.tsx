@@ -75,7 +75,10 @@ function Home() {
         </div>
 
         {/* Property & EMIs */}
-        <div className="menu-button bg-property shadow-lg border border-gray-100 rounded-md">
+        <div 
+          className="menu-button bg-property shadow-lg border border-gray-100 rounded-md cursor-pointer"
+          onClick={() => navigate('/property')}
+        >
           <div className="menu-content p-4">
             <h3 className="menu-title">Property & EMIs</h3>
             <p className="menu-subtitle">
