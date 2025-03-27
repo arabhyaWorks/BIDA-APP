@@ -4,6 +4,7 @@ import axios from 'axios';
 // const API_BASE_URL = 'http://localhost:3000/api';
 const API_BASE_URL = 'https://admin.pmsbhadohi.com/api';
 
+
 interface LoginResponse {
   message: string;
 }
@@ -59,7 +60,7 @@ export const getProperties = async (mobile_no: string): Promise<PropertyResponse
         'Authorization': `Bearer ${localStorage.getItem('bida_token')}`,
       },
     });
-
+    
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -97,3 +98,5 @@ export const verifyOTP = async (mobile_number: string, otp: string): Promise<Ver
     throw new Error('Failed to verify OTP. Please try again.');
   }
 };
+
+export {API_BASE_URL};
