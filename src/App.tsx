@@ -11,6 +11,7 @@ import Profile from './Pages/Profile';
 import Payments from './Pages/Payments';
 import Documents from './Pages/Documents.tsx';
 import EMIPayment from './Pages/EMIPayment';
+import ServiceCharges from './Pages/ServiceCharge.tsx';
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
         <Route path="/property/payments" element={<Payments />} />
         <Route path="/property/documents" element={<Documents />} />
         <Route path="/property/pay-emi" element={<EMIPayment />} />
+        <Route path="/property/service-charges" element={<ServiceCharges />} />
+
       </Routes>
     </Router>
   );

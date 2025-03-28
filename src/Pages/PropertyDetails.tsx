@@ -17,24 +17,28 @@ interface PropertyRecord {
   avanti_ka_naam: string;
   sampatti_sreni: string;
   avanti_sampatti_sankhya?: string;
+  avantan_dinank: string; // Added for service charge calculation
 }
 
 interface InstallmentPlan {
-  kul_yog: string;                        // "5218325.94"
-  paid_amount: string;                    // "0.00"
-  remaining_balance: string;              // "5218325.94"
-  ideal_kisht_mool: string;              // "1230737.25"
-  ideal_number_of_installments: number;   // e.g. 4
-  number_of_installment_paid: number;     // e.g. 0
-  first_installment_due_date: string;     // e.g. "01-02-2021" (dd-mm-yyyy)
+  kul_yog: string;
+  paid_amount: string;
+  remaining_balance: string;
+  ideal_kisht_mool: string;
+  ideal_number_of_installments: number;
+  number_of_installment_paid: number;
+  first_installment_due_date: string;
 }
 
 interface Installment {
-  // your installment fields (if any)
+  // Define installment fields as needed
 }
 
 interface ServiceCharge {
-  // your service charge fields (if any)
+  service_charge_financial_year: string;
+  service_charge_amount: string;
+  service_charge_late_fee: string;
+  service_charge_payment_date: string;
 }
 
 interface PropertyData {
@@ -44,44 +48,47 @@ interface PropertyData {
   serviceCharges: ServiceCharge[];
 }
 
-/**
- * Helper function:
- *  - Takes the first installment date in "dd-mm-yyyy" format.
- *  - Calculates which installment is next (based on # paid).
- *  - Returns a new "dd-mm-yyyy" string for the next due date, adding 3 months per installment.
- *
- * For example, if the first due date is 01-02-2021 and
- * the user has already paid 1 installment, we add 3 months → 01-05-2021.
- */
+// Utility Functions for Service Charges
+const getFinancialYearFromDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0 = Jan, 3 = Apr
+  return month < 3 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
+};
+
+const generateBilledYears = (allotmentDate: string, currentDate: string): string[] => {
+  const allotmentFY = getFinancialYearFromDate(allotmentDate);
+  const [startYear] = allotmentFY.split("-").map(Number);
+  const currentFY = getFinancialYearFromDate(currentDate);
+  const [endYear] = currentFY.split("-").map(Number);
+  const years = [];
+  for (let year = startYear + 1; year <= endYear; year++) {
+    years.push(`${year}-${year + 1}`);
+  }
+  return years;
+};
+
+// Helper function for next installment due date
 function getNextInstallmentDueDate(
   firstInstallmentDate: string,
   installmentsPaid: number
 ): string {
   try {
-    // Example: "01-02-2021"
     const [dayStr, monthStr, yearStr] = firstInstallmentDate.split("-");
     const day = parseInt(dayStr, 10);
-    const month = parseInt(monthStr, 10); // 1-based
+    const month = parseInt(monthStr, 10);
     const year = parseInt(yearStr, 10);
 
-    // Create a Date object (JavaScript months are 0-based)
     const dateObj = new Date(year, month - 1, day);
-
-    // Add 3 months per installment paid
-    // If user has paid 1 installment, next due date is +3 months from the original
-    // installmentsPaid = 0 => next due date is the firstInstallmentDate
-    // installmentsPaid = 1 => add 3 months
     const monthsToAdd = 3 * installmentsPaid;
     dateObj.setMonth(dateObj.getMonth() + monthsToAdd);
 
-    // Convert back to dd-mm-yyyy
     const newDay = String(dateObj.getDate()).padStart(2, "0");
     const newMon = String(dateObj.getMonth() + 1).padStart(2, "0");
     const newYr = String(dateObj.getFullYear());
 
     return `${newDay}-${newMon}-${newYr}`;
   } catch {
-    // If something fails, return a fallback
     return "N/A";
   }
 }
@@ -97,41 +104,32 @@ function PropertyDetails() {
   useEffect(() => {
     const fetchPropertyData = async () => {
       try {
-        // Attempt to retrieve phone number from local storage
         const phone = localStorage.getItem("bida_phone");
         if (!phone) throw new Error("Phone number not found in local storage");
 
-        // Make the service call
         const response = await getProperties(phone);
-
-        // Find the property matching the route param "id"
         const selectedProperty = response.data.find(
-          (p: PropertyData) =>
-            p.propertyRecord.property_unique_id === id
+          (p: PropertyData) => p.propertyRecord.property_unique_id === id
         );
 
         if (!selectedProperty) {
           throw new Error("Property not found");
         }
 
-        // Set local state
         setProperty(selectedProperty);
 
-        // Calculate the next installment due date
         const {
           first_installment_due_date,
           number_of_installment_paid,
           ideal_number_of_installments,
         } = selectedProperty.installmentPlan;
 
-        // If user has already paid all installments, no next due
         if (number_of_installment_paid >= ideal_number_of_installments) {
           setNextDueDate("All installments paid");
         } else {
-          // nextDueDate is the next installment after however many have been paid
           const computedDate = getNextInstallmentDueDate(
             first_installment_due_date,
-            number_of_installment_paid // 0 means first installment is next
+            number_of_installment_paid
           );
           setNextDueDate(computedDate);
         }
@@ -148,6 +146,25 @@ function PropertyDetails() {
 
     fetchPropertyData();
   }, [id]);
+
+  // Service Charge Status Calculation
+  const getServiceChargeStatus = () => {
+    if (!property) return { firstPayableFY: "N/A", paidYears: [], unpaidYears: [] };
+
+    const allotmentDate = property.propertyRecord.avantan_dinank;
+    const currentDate = new Date().toISOString().split("T")[0];
+    const billedYears = generateBilledYears(allotmentDate, currentDate);
+    const firstPayableFY = billedYears[0] || "N/A";
+
+    const paidYears = property.serviceCharges.map(
+      (charge) => charge.service_charge_financial_year
+    );
+    const unpaidYears = billedYears.filter(
+      (year) => !paidYears.includes(year)
+    );
+
+    return { firstPayableFY, paidYears, unpaidYears };
+  };
 
   if (loading) {
     return (
@@ -173,7 +190,6 @@ function PropertyDetails() {
     );
   }
 
-  // Destructure from property
   const {
     propertyRecord,
     installmentPlan,
@@ -181,7 +197,6 @@ function PropertyDetails() {
     serviceCharges,
   } = property;
 
-  // Destructure from installment plan
   const {
     kul_yog,
     paid_amount,
@@ -191,7 +206,6 @@ function PropertyDetails() {
     number_of_installment_paid,
   } = installmentPlan;
 
-  // Convert strings to numbers for display
   const totalAmount = parseFloat(kul_yog);
   const totalPaid = parseFloat(paid_amount);
   const totalRemaining = parseFloat(remaining_balance);
@@ -199,6 +213,8 @@ function PropertyDetails() {
 
   const installmentsPaid = number_of_installment_paid;
   const totalEmis = ideal_number_of_installments;
+
+  const { firstPayableFY, paidYears, unpaidYears } = getServiceChargeStatus();
 
   return (
     <div className="max-w-md mx-auto bg-gray-50 min-h-screen pb-20">
@@ -344,8 +360,69 @@ function PropertyDetails() {
         </div>
       </div>
 
+      {/* Service Charge Status Section */}
+      <div className="p-4 pt-2">
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Service Charge Status
+          </h3>
+          <div className="space-y-4">
+            <div className="text-sm">
+              <p className="text-gray-600">
+                <strong>पहला देय वित्तीय वर्ष:</strong> {firstPayableFY}
+              </p>
+            </div>
+
+            {paidYears.length > 0 && (
+              <div className="text-sm">
+                <p className="text-gray-600 font-medium mb-1">भुगतान किए गए वर्ष:</p>
+                <div className="flex flex-wrap gap-2">
+                  {paidYears.map((year) => (
+                    <span
+                      key={year}
+                      className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs"
+                    >
+                      {year}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {unpaidYears.length > 0 && (
+              <div className="text-sm">
+                <p className="text-gray-600 font-medium mb-1">अवैतनिक वर्ष:</p>
+                <div className="flex flex-wrap gap-2">
+                  {unpaidYears.map((year) => (
+                    <span
+                      key={year}
+                      className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs"
+                    >
+                      {year}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(paidYears.length > 0 || unpaidYears.length > 0) && (
+              <button
+                onClick={() =>
+                  navigate("/property/service-charges", {
+                    state: { property },
+                  })
+                }
+                className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors mt-4"
+              >
+                Manage Service Charges
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+      {/* <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
         <div className="max-w-md mx-auto flex justify-between px-6 py-3">
           <button className="flex flex-col items-center text-blue-600">
             <Home className="w-6 h-6" />
@@ -364,7 +441,7 @@ function PropertyDetails() {
             <span className="text-xs mt-1">Profile</span>
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

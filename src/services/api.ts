@@ -48,6 +48,12 @@ const api = axios.create({
   },
 });
 
+export const addServiceCharge = async (serviceChargeData: any) => {
+  const response = await axios.post(`${API_BASE_URL}/payments/service-charges`, serviceChargeData);
+  console.log(response);
+  return response.data;
+};
+
 export const getProperties = async (mobile_no: string): Promise<PropertyResponse> => {
   try {
     const response = await api.get<PropertyResponse>('/properties', {
