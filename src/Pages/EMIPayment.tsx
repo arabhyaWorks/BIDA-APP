@@ -190,7 +190,7 @@ function EMIPayment() {
       console.log(paymentData);
 
       const response = await fetch(
-        `${API_BASE_URL}/api/payments/installment-payments`,
+        `${API_BASE_URL}/payments/installment-payments`,
         {
           method: "POST",
           headers: {
@@ -200,6 +200,8 @@ function EMIPayment() {
           body: JSON.stringify([paymentData]),
         }
       );
+
+      console.log(response);
 
       if (!response.ok) throw new Error("Payment failed");
 
